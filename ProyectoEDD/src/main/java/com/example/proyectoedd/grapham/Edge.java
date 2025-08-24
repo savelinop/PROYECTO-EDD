@@ -26,6 +26,10 @@ public class Edge<E, V> {
         return data;
     }
 
-    public void setWeight(int weight) { this.weight = weight; }
-    public void setData(E data) { this.data = data; }
+    public void setWeight(int weight) {
+        this.weight = weight;
+    }
+    public void setData(E data) {
+        this.data = data;
+    }
 }

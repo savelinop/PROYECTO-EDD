@@ -11,6 +11,10 @@ public class Vertex<V, E> {
         this.edges = new LinkedList<>();
     }
 
-    public V getContent() { return content; }
-    public LinkedList<Edge<E, V>> getEdges() { return edges; }
+    public V getContent() {
+        return content;
+    }
+    public LinkedList<Edge<E, V>> getEdges() {
+        return edges;
+    }
 }
