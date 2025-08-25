@@ -1,4 +1,4 @@
-package Ventana;
+package com.example.proyectoedd.Ventana;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;

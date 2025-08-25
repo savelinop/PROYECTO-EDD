@@ -1,4 +1,4 @@
-package Ventana;
+package com.example.proyectoedd.Ventana;
 import java.io.Serializable;
 public class Usuario implements Serializable {
 

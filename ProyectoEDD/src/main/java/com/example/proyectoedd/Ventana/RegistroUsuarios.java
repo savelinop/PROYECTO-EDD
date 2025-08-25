@@ -1,4 +1,4 @@
-package Ventana;
+package com.example.proyectoedd.Ventana;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
