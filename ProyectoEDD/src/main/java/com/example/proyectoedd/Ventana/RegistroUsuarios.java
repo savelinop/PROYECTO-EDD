@@ -32,4 +32,13 @@ public class RegistroUsuarios {
             return new ArrayList<>();
         }
     }
+    public static boolean validarLogin(String correo, String password) {
+        List<Usuario> usuarios = cargarUsuarios();
+        for (Usuario u : usuarios) {
+            if (u.getCorreo().equals(correo) && u.getPassword().equals(password)) {
+                return true; // credenciales válidas
+            }
+        }
+        return false; // no encontrado o credenciales incorrectas
+    }
 }

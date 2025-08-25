@@ -16,6 +16,13 @@ public class Usuario implements Serializable {
         this.password = password;
     }
 
+    public String getCorreo() {
+        return correo;
+    }
+
+    public String getPassword() {
+        return password;
+    }
     @Override
     public String toString() {
         return "Usuario{" +
@@ -24,4 +31,5 @@ public class Usuario implements Serializable {
                 ", correo='" + correo + '\'' +
                 '}';
     }
+
 }
