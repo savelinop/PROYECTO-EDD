@@ -47,12 +47,14 @@ public class FlightIndex {
     private final TreeMap<String, TreeSet<FlightRef>> byAirline = new TreeMap<>();
     private final TreeMap<Integer, TreeSet<FlightRef>> byDuration = new TreeMap<>();
 
+    //VUELOS POR DURACION (origen -> destino -> aerolinea)
     private static final Comparator<FlightRef> BY_DURATION_THEN_ROUTE =
             Comparator.comparingInt((FlightRef f) -> f.duracion)
                     .thenComparing(f -> f.origen)
                     .thenComparing(f -> f.destino)
                     .thenComparing(f -> f.aerolinea);
 
+    //VUELOS POR ORIGEN (DESTINO -> aerolinea -> duracion)
     private static final Comparator<FlightRef> BY_ROUTE_THEN_AIRLINE =
             Comparator.comparing((FlightRef f) -> f.origen)
                     .thenComparing(f -> f.destino)

@@ -105,9 +105,8 @@ public class VentanaPrincipal {
         root.setCenter(buildCanvas());
         root.setBottom(buildStatusBar());
 
-        // Si quieres un saludo arriba:
-        // Label hi = new Label("Bienvenido: " + (usuarioLogeado != null ? usuarioLogeado : " invitado"));
-        // root.setLeft(new VBox(hi));
+
+
 
         refreshCombos();
         drawGraph();
