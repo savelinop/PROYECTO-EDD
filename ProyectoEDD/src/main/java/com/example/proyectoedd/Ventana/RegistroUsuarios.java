@@ -1,44 +1,36 @@
 package com.example.proyectoedd.Ventana;
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
+import java.util.Optional;
 
 public class RegistroUsuarios {
-    private static final String ARCHIVO = "usuarios.dat";
+    private static final RegistroUsuarios INSTANCE = new RegistroUsuarios();
 
-    // Guardar usuario
-    public static void guardarUsuario(Usuario usuario) {
-        List<Usuario> usuarios = cargarUsuarios();
-        usuarios.add(usuario);
+    private final ObservableList<Usuario> usuarios = FXCollections.observableArrayList();
 
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(ARCHIVO))) {
-            oos.writeObject(usuarios);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private RegistroUsuarios() {
+        // Seed opcional
+        usuarios.add(new Usuario("Admin Demo", "admin@demo.com", "admin"));
     }
 
-    // Cargar lista de usuarios
-    @SuppressWarnings("unchecked")
-    public static List<Usuario> cargarUsuarios() {
-        File file = new File(ARCHIVO);
-        if (!file.exists()) {
-            return new ArrayList<>();
-        }
+    public static RegistroUsuarios getInstance() { return INSTANCE; }
 
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(ARCHIVO))) {
-            return (List<Usuario>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            return new ArrayList<>();
-        }
+    public ObservableList<Usuario> getUsuarios() { return usuarios; }
+
+    public boolean existeCorreo(String correo) {
+        return usuarios.stream().anyMatch(u -> u.getCorreo().equalsIgnoreCase(correo));
     }
-    public static boolean validarLogin(String correo, String password) {
-        List<Usuario> usuarios = cargarUsuarios();
-        for (Usuario u : usuarios) {
-            if (u.getCorreo().equals(correo) && u.getPassword().equals(password)) {
-                return true; // credenciales válidas
-            }
-        }
-        return false; // no encontrado o credenciales incorrectas
+
+    public boolean registrar(String nombre, String correo, String password) {
+        if (existeCorreo(correo)) return false;
+        usuarios.add(new Usuario(nombre, correo, password));
+        return true;
+    }
+
+    public Optional<Usuario> autenticar(String correo, String password) {
+        return usuarios.stream()
+                .filter(u -> u.getCorreo().equalsIgnoreCase(correo) && u.getPassword().equals(password))
+                .findFirst();
     }
 }

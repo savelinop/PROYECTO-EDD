@@ -1,11 +1,11 @@
 package com.example.proyectoedd.Ventana;
-
 import com.example.proyectoedd.domain.Aeropuerto;
 import com.example.proyectoedd.domain.Vuelo;
 import com.example.proyectoedd.grapham.Vertex;
 import com.example.proyectoedd.service.GrafoVuelosService;
 import com.example.proyectoedd.ui.ToolbarView;
 import com.example.proyectoedd.ui.UiActions;
+
 import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Parent;
@@ -26,11 +26,17 @@ import java.util.stream.Collectors;
 
 /**
  * Pantalla principal (gestión de vuelos).
- * Esta clase convierte tu antiguo MainApp en una VISTA reutilizable.
+ * Interfaz clásica: MenuBar + Toolbar + Canvas + StatusBar
  */
 public class VentanaPrincipal {
 
+    public VentanaPrincipal(Usuario usuario) {
+        this.usuario = usuario;
+        if (usuario != null) setUsuarioLogeado(usuario.getCorreo());
+    }
+
     // ----- Estado de sesión (opcional) -----
+    private final Usuario usuario;
     private static String usuarioLogeado;
     public static void setUsuarioLogeado(String correo) { usuarioLogeado = correo; }
 
@@ -100,10 +106,14 @@ public class VentanaPrincipal {
             @Override public void onVerEstadisticas()   { showEstadisticasDialog(); }
         });
 
+        // Marco clásico: MenuBar + Toolbar + Centro + StatusBar
         BorderPane root = new BorderPane();
-        root.setTop(toolbar);
+        root.setTop(new VBox(buildMenuBar(), toolbar));
         root.setCenter(buildCanvas());
         root.setBottom(buildStatusBar());
+
+
+
 
 
 
@@ -111,7 +121,7 @@ public class VentanaPrincipal {
         refreshCombos();
         drawGraph();
 
-        // Auto-guardado al cerrar la JVM (suple al antiguo MainApp.stop())
+        // Auto-guardado al cerrar la JVM
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 ensureDataDir();
@@ -123,6 +133,44 @@ public class VentanaPrincipal {
         }));
 
         return root;
+    }
+
+    // ====== MenuBar clásico ======
+    private MenuBar buildMenuBar() {
+        Menu mArchivo = new Menu("Archivo");
+        MenuItem miCargar  = new MenuItem("Cargar CSV...");
+        MenuItem miGuardar = new MenuItem("Guardar CSV...");
+        MenuItem miRedib   = new MenuItem("Redibujar");
+        MenuItem miSalir   = new MenuItem("Salir");
+
+        miCargar.setOnAction(e -> cargarCSVDialog());
+        miGuardar.setOnAction(e -> guardarCSVDialog());
+        miRedib.setOnAction(e -> drawGraph());
+        miSalir.setOnAction(e -> ((javafx.stage.Stage)((MenuItem)e.getSource()).getParentPopup().getOwnerWindow()).close());
+        mArchivo.getItems().addAll(miCargar, miGuardar, new SeparatorMenuItem(), miRedib, new SeparatorMenuItem(), miSalir);
+
+        Menu mVer = new Menu("Ver");
+        MenuItem miResetView = new MenuItem("Centrar / Reset zoom");
+        miResetView.setOnAction(e -> {
+            zoom = 1.0; panTX = panTY = 0;
+            gRoot.setScaleX(1); gRoot.setScaleY(1);
+            gRoot.setTranslateX(0); gRoot.setTranslateY(0);
+        });
+        mVer.getItems().addAll(miResetView);
+
+        Menu mAyuda = new Menu("Ayuda");
+        MenuItem miAcerca = new MenuItem("Acerca de");
+        miAcerca.setOnAction(e -> {
+            String nombre = (usuario != null && usuario.getNombre()!=null) ? usuario.getNombre() : (usuarioLogeado!=null ? usuarioLogeado : "invitado");
+            Alert a = new Alert(Alert.AlertType.INFORMATION, "PROYECTO-EDD\nGestión de vuelos en JavaFX\nUsuario: " + nombre);
+            a.setHeaderText(null);
+            a.showAndWait();
+        });
+        mAyuda.getItems().add(miAcerca);
+
+        MenuBar mb = new MenuBar(mArchivo, mVer, mAyuda);
+        mb.setUseSystemMenuBar(false);
+        return mb;
     }
 
     // ====== Helpers de persistencia ======
@@ -176,7 +224,11 @@ public class VentanaPrincipal {
     }
 
     private HBox buildStatusBar() {
-        lblInfo = new Label("Listo.");
+        String base = "Listo.";
+        if (usuario != null && usuario.getCorreo()!=null) base += " Sesión: " + usuario.getCorreo();
+        else if (usuarioLogeado != null) base += " Sesión: " + usuarioLogeado;
+
+        lblInfo = new Label(base);
         HBox hb = new HBox(lblInfo);
         hb.setPadding(new Insets(8));
         hb.setStyle("-fx-background-color: #0d1321; -fx-text-fill: white;");
@@ -503,9 +555,9 @@ public class VentanaPrincipal {
 
         dlg.setResultConverter(bt -> bt == ButtonType.OK
                 ? new Aeropuerto(tfCodigo.getText().trim().toUpperCase(),
-                tfNombre.getText().trim(),
-                tfCiudad.getText().trim(),
-                tfPais.getText().trim())
+                                  tfNombre.getText().trim(),
+                                  tfCiudad.getText().trim(),
+                                  tfPais.getText().trim())
                 : null);
 
         var res = dlg.showAndWait(); if (res.isEmpty()) return;
@@ -775,8 +827,8 @@ public class VentanaPrincipal {
 
         String resumen =
                 "Más conectado (total): " + max.map(r -> r.codigo() + " (" + r.total() + ")").orElse("-") + "\n" +
-                        "Menos conectado (total): " + min.map(r -> r.codigo() + " (" + r.total() + ")").orElse("-") + "\n\n" +
-                        "Tip: Usa el botón 'Ruta más corta' para calcular Dijkstra entre Origen/Destino actuales.";
+                "Menos conectado (total): " + min.map(r -> r.codigo() + " (" + r.total() + ")").orElse("-") + "\n\n" +
+                "Tip: Usa el botón 'Ruta más corta' para calcular Dijkstra entre Origen/Destino actuales.";
 
         TextArea ta = new TextArea(resumen);
         ta.setEditable(false);
@@ -804,7 +856,7 @@ public class VentanaPrincipal {
     private static Color lerpColor(Color a, Color b, double t) {
         t = clamp(t, 0, 1);
         return new Color(a.getRed() + (b.getRed()-a.getRed())*t,
-                a.getGreen() + (b.getGreen()-a.getGreen())*t,
-                a.getBlue() + (b.getBlue()-a.getBlue())*t, 1.0);
+                         a.getGreen() + (b.getGreen()-a.getGreen())*t,
+                         a.getBlue() + (b.getBlue()-a.getBlue())*t, 1.0);
     }
 }
